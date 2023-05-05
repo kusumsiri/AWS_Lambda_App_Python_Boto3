@@ -1,1 +1,1 @@
-# AWS_Lambda_App_Python_Boto3
+# AWS Lambda Application with Python & Boto3
