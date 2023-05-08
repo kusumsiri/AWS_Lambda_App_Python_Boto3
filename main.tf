@@ -12,7 +12,8 @@ resource "aws_dynamodb_table" "dynamodb_table" {
 }
 
 resource "aws_s3_bucket" "bucket" {
-  bucket = "kusumsiri-test-bucket"
+  bucket = "lambda-python-app-bucket-kusumsiri"
+  force_destroy = true
 }
 
 resource "aws_iam_role" "iam_role" {
@@ -38,12 +39,16 @@ resource "aws_iam_policy" "iam_ploicy" {
     Statement = [{
       Effect  = "Allow"
       Action  = [
-        "logs:CreateLogGroup",
-        "logs:CreateLogStream",
-        "logs:PutLogEvents",
-        "dynamodb:*"
+        "logs:*",
+        "cloudwatch:*",
+        "dynamodb:*",
+        "s3:*",
+        "s3-object-lambda:*",
+        "s3-object-lambda:GetObject",
       ]
-      Resource = ["${aws_dynamodb_table.dynamodb_table.arn}"]
+      Resource = ["${aws_dynamodb_table.dynamodb_table.arn}",
+                  "${aws_s3_bucket.bucket.arn}"
+                ]
     }]
   })
 }
@@ -61,4 +66,21 @@ resource "aws_lambda_function" "lambda" {
   role    = aws_iam_role.iam_role.arn
   handler = "add_customer.lambda_handler"
   runtime = var.lambda_runtime_version
+}
+
+# Adding S3 bucket as trigger lambda
+resource "aws_s3_bucket_notification" "aws-lambda-trigger" {
+  bucket = aws_s3_bucket.bucket.id
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.lambda.arn
+    events              = ["s3:ObjectCreated:*", "s3:ObjectRemoved:*"]
+  }
+}
+
+resource "aws_lambda_permission" "test" {
+  statement_id  = "AllowS3Invoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = "arn:aws:s3:::${aws_s3_bucket.bucket.id}"
 }
