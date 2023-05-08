@@ -50,15 +50,15 @@ resource "aws_iam_policy" "iam_ploicy" {
 
 data "archive_file" "zip" {
   type        = "zip"
-  source_file = "customer.py"
-  output_path = "customer.zip"
+  source_file = "add_customer.py"
+  output_path = "add_customer.zip"
 }
 
 resource "aws_lambda_function" "lambda" {
-  function_name = "customer"
+  function_name = "add_customer"
   filename         = data.archive_file.zip.output_path
   # source_code_hash = data.archive_file.zip.output_base64sha256
   role    = aws_iam_role.iam_role.arn
-  handler = "customer.lambda_handler"
+  handler = "add_customer.lambda_handler"
   runtime = var.lambda_runtime_version
 }
