@@ -40,17 +40,31 @@ resource "aws_iam_policy" "iam_ploicy" {
       Effect  = "Allow"
       Action  = [
         "logs:*",
+        "lambda:InvokeFunction",
         "cloudwatch:*",
         "dynamodb:*",
         "s3:*",
+        "s3:GetObject",
         "s3-object-lambda:*",
         "s3-object-lambda:GetObject",
       ]
-      Resource = ["${aws_dynamodb_table.dynamodb_table.arn}",
-                  "${aws_s3_bucket.bucket.arn}"
-                ]
-    }]
+      Resource = ["*"]
+    },{
+      Effect = "Allow",
+      Action  = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+      ],
+      Resource = "*"
+    }
+    ]
   })
+}
+
+resource "aws_iam_role_policy_attachment" "test-attach" {
+  role       = aws_iam_role.iam_role.name
+  policy_arn = aws_iam_policy.iam_ploicy.arn
 }
 
 data "archive_file" "zip" {
@@ -84,3 +98,8 @@ resource "aws_lambda_permission" "test" {
   principal     = "s3.amazonaws.com"
   source_arn    = "arn:aws:s3:::${aws_s3_bucket.bucket.id}"
 }
+
+# resource "aws_cloudwatch_log_group" "logs" {
+#   name = "lambda-app"
+#   retention_in_days = 1
+# }
