@@ -67,6 +67,14 @@ resource "aws_iam_role_policy_attachment" "test-attach" {
   policy_arn = aws_iam_policy.iam_ploicy.arn
 }
 
+resource "aws_lambda_permission" "test" {
+  statement_id  = "AllowS3Invoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.lambda.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = "arn:aws:s3:::${aws_s3_bucket.bucket.id}"
+}
+
 data "archive_file" "zip" {
   type        = "zip"
   source_file = "add_customer.py"
@@ -80,9 +88,14 @@ resource "aws_lambda_function" "lambda" {
   role    = aws_iam_role.iam_role.arn
   handler = "add_customer.lambda_handler"
   runtime = var.lambda_runtime_version
+  environment {
+    variables = {
+      TABLE_NAME            = var.table_name
+    }
+  }
 }
 
-# Adding S3 bucket as trigger lambda
+# S3 as trigger to lambda
 resource "aws_s3_bucket_notification" "aws-lambda-trigger" {
   bucket = aws_s3_bucket.bucket.id
   lambda_function {
@@ -91,15 +104,4 @@ resource "aws_s3_bucket_notification" "aws-lambda-trigger" {
   }
 }
 
-resource "aws_lambda_permission" "test" {
-  statement_id  = "AllowS3Invoke"
-  action        = "lambda:InvokeFunction"
-  function_name = aws_lambda_function.lambda.function_name
-  principal     = "s3.amazonaws.com"
-  source_arn    = "arn:aws:s3:::${aws_s3_bucket.bucket.id}"
-}
 
-# resource "aws_cloudwatch_log_group" "logs" {
-#   name = "lambda-app"
-#   retention_in_days = 1
-# }
