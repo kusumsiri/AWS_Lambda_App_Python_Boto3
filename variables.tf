@@ -4,6 +4,6 @@ variable "table_name" {
 }
 
 variable "lambda_runtime_version" {
-  description = "Lambda function runtime version"
+  description = "Python runtime version"
   default = "python3.10"
 }
