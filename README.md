@@ -1,2 +1,2 @@
 # AWS Lambda Application with Python & Boto3
-The boto3 SDK can be used to integrate the Python language with AWS services.
+The boto3 SDK can be used to integrate the Python language with AWS services. Here when a json file is uploaded to the S3 bucket, a Lambda function is triggered to read it and store the data in a DynamoDB table.
