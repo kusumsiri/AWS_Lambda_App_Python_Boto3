@@ -7,3 +7,7 @@ Related Terraform commands
 ```
 terraform init
 ```
+2. Terraform plan
+```
+terraform plan
+```
